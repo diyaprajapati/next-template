@@ -2,15 +2,24 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
+import { validatePassword } from "@/lib/password";
 
 // POST /api/auth/register
 export async function POST(req: Request) {
     try {
-        const { email, password } = await req.json();
+        const { name, email, password } = await req.json();
 
         if (!email || !password) {
             return NextResponse.json(
                 { error: "Email and password are required" },
+                { status: 400 },
+            );
+        }
+
+        const pwCheck = validatePassword(password);
+        if (!pwCheck.valid) {
+            return NextResponse.json(
+                { error: pwCheck.message ?? "Password does not meet requirements" },
                 { status: 400 },
             );
         }
@@ -30,13 +39,14 @@ export async function POST(req: Request) {
 
         const user = await prisma.user.create({
             data: {
+                name,
                 email,
                 password: hashedPassword,
             },
         });
 
         const token = jwt.sign(
-            { id: user.id, email: user.email },
+            { id: user.id, name: user.name, email: user.email },
             process.env.JWT_SECRET as string,
             { expiresIn: "1h" },
         );

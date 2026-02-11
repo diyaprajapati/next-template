@@ -5,6 +5,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
 import { toast } from "sonner";
 import { getSession } from "next-auth/react";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { AppSidebar } from "@/components/app-sidebar";
 
 function DashboardContent() {
   const router = useRouter();
@@ -88,6 +92,24 @@ function DashboardContent() {
     void ensureTokenFromSession();
   }, [router]);
 
+  // When page is restored from back/forward cache, re-check auth and redirect if logged out
+  useEffect(() => {
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          router.replace("/login");
+          return;
+        }
+        fetch("/api/auth/me", { credentials: "include" })
+          .then((res) => { if (!res.ok) router.replace("/login"); })
+          .catch(() => router.replace("/login"));
+      }
+    };
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, [router]);
+
   // Handle Google auth success / failure toasts via query params
   useEffect(() => {
     const from = searchParams.get("from");
@@ -103,19 +125,54 @@ function DashboardContent() {
   }, [searchParams]);
 
   return (
-    <div className="flex justify-between items-center p-4">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
-      <Button
-        onClick={() => {
-          localStorage.removeItem("token");
-          void fetch("/api/auth/logout", { method: "POST" });
-          router.replace("/login");
-        }}
-        className="cursor-pointer"
-      >
-        Logout
-      </Button>
-    </div>
+    // <div className="flex justify-between items-center p-4">
+    //   <h1 className="text-2xl font-bold">Dashboard</h1>
+    //   <Button
+        // onClick={() => {
+        //   localStorage.removeItem("token");
+        //   void fetch("/api/auth/logout", { method: "POST" });
+        //   router.replace("/login");
+        // }}
+        // className="cursor-pointer"
+    //   >
+    //     Logout
+    //   </Button>
+    // </div>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+          <div className="flex items-center gap-2 px-4">
+            <SidebarTrigger className="-ml-1" />
+            <Separator
+              orientation="vertical"
+              className="mr-2 data-[orientation=vertical]:h-4"
+            />
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem className="hidden md:block">
+                  <BreadcrumbLink href="#">
+                    Build Your Application
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>Data Fetching</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
+        </header>
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+            <div className="bg-muted/50 aspect-video rounded-xl" />
+            <div className="bg-muted/50 aspect-video rounded-xl" />
+            <div className="bg-muted/50 aspect-video rounded-xl" />
+          </div>
+          <div className="bg-muted/50 min-h-screen flex-1 rounded-xl md:min-h-min" />
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
 

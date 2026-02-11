@@ -6,8 +6,10 @@ export async function POST(req: Request) {
 
     response.cookies.set("token", "", {
         httpOnly: true,
-        expires: new Date(0),
+        secure: process.env.NODE_ENV === "production",
         path: "/",
+        maxAge: 0,
+        expires: new Date(0),
     })
 
     return response;

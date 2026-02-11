@@ -17,13 +17,16 @@ import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { signIn } from "next-auth/react"
 import Image from "next/image"
+import { validatePassword } from "@/lib/password"
 
 export default function Page() {
   const router = useRouter();
 
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [nameError, setNameError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
@@ -50,12 +53,17 @@ export default function Page() {
 
   const handleRegister = async () => {
     // reset errors
+    setNameError("");
     setEmailError("");
     setPasswordError("");
     setConfirmPasswordError("");
 
     // simple client-side validation like zod messages
     let hasError = false;
+    if (!name) {
+      setNameError("Name is required");
+      hasError = true;
+    }
     if (!email) {
       setEmailError("Email is required");
       hasError = true;
@@ -67,6 +75,12 @@ export default function Page() {
     if (!password) {
       setPasswordError("Password is required");
       hasError = true;
+    } else {
+      const pwCheck = validatePassword(password);
+      if (!pwCheck.valid) {
+        setPasswordError(pwCheck.message ?? "Invalid password");
+        hasError = true;
+      }
     }
     if (!confirmPassword) {
       setConfirmPasswordError("Confirm password is required");
@@ -82,7 +96,7 @@ export default function Page() {
       (async () => {
         const res = await fetch("/api/auth/register", {
           method: "POST",
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ name, email, password }),
           headers: { "Content-Type": "application/json" },
         });
 
@@ -132,6 +146,15 @@ export default function Page() {
         <CardContent>
           <div className="flex flex-col gap-6">
             <div className="grid gap-2">
+              <Label>Name</Label>
+              <Input
+                type="text"
+                placeholder="John Doe"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
               <Label>Email</Label>
               <Input
                 type="email"
@@ -150,10 +173,14 @@ export default function Page() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                placeholder="********"
               />
               {passwordError && (
                 <p className="text-sm text-destructive">{passwordError}</p>
               )}
+              <p className="text-xs text-muted-foreground">
+                At least 8 characters, one uppercase, one lowercase, one digit, one special character (!@#$%^&* etc.)
+              </p>
             </div>
 
             <div className="grid gap-2">
@@ -162,6 +189,7 @@ export default function Page() {
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="********"
               />
               {confirmPasswordError && (
                 <p className="text-sm text-destructive">

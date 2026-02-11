@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 
 // POST /api/auth/login
