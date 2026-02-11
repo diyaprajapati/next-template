@@ -2,11 +2,11 @@
 
 import { Button } from "@/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { toast } from "sonner";
 import { getSession } from "next-auth/react";
 
-export default function Page() {
+function DashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -116,5 +116,13 @@ export default function Page() {
         Logout
       </Button>
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<div className="flex justify-between items-center p-4"><h1 className="text-2xl font-bold">Dashboard</h1><div className="h-10 w-20 animate-pulse rounded-md bg-muted" /></div>}>
+      <DashboardContent />
+    </Suspense>
   );
 }
