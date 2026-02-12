@@ -153,6 +153,9 @@ export default function Page() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
+              {nameError && (
+                <p className="text-sm text-destructive">{nameError}</p>
+              )}
             </div>
             <div className="grid gap-2">
               <Label>Email</Label>
