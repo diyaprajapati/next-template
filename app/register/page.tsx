@@ -215,7 +215,7 @@ export default function Page() {
             className="w-full cursor-pointer flex items-center justify-center gap-2 hover:bg-primary/90"
             onClick={handleGoogleRegister}
           >
-            <span className="bg-white rounded-full p-1">
+            <span className="rounded-full p-1">
               <Image src="/google-logo.png" alt="Google" width={20} height={20} />
             </span>
             <span>Register with Google</span>

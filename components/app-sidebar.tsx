@@ -25,6 +25,7 @@ import {
   SidebarRail,
 } from "./ui/sidebar"
 import { NavProjects } from "./nav-projects"
+import { ThemeToggle } from "./theme-toggle"
 
 export type SidebarUser = {
   name: string
@@ -211,7 +212,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={displayUser} />
+        <div className="flex w-full items-center justify-between gap-2">
+          <NavUser user={displayUser} />
+          <ThemeToggle />
+        </div>
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
